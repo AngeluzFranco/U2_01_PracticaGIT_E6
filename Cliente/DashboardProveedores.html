@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 20px;
+        }
+        .table-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f1f3f9;
+            cursor: pointer;
+        }
+        .action-btn {
+            margin: 0 3px;
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-add {
+            background-color: #4e73df;
+            color: white;
+            font-weight: bold;
+        }
+        .btn-add:hover {
+            background-color: #3a5ccc;
+            color: white;
+        }
+        .badge-vehicles {
+            background-color: #4e73df;
+            font-size: 0.85em;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Carros</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Proveedores</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    
+    <div class="container">
+        <h1 class="mb-4">Gestión de Proveedores</h1>
+        
+        <!-- Barra de búsqueda y botón agregar -->
+        <div class="row search-container">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Buscar proveedor..." id="searchInput">
+                    <button class="btn btn-outline-secondary" type="button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#addProviderModal">
+                    <i class="fas fa-plus"></i> Agregar Proveedor
+                </button>
+            </div>
+        </div>
+        
+        <!-- Tabla de proveedores -->
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Correo</th>
+                            <th>Teléfono</th>
+                            <th>Vehículos</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="providersTableBody">
+                        <!-- Los proveedores se cargarán aquí dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar/editar proveedor -->
+    <div class="modal fade" id="addProviderModal" tabindex="-1" aria-labelledby="addProviderModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addProviderModalLabel">Agregar Nuevo Proveedor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="providerForm">
+                        <input type="hidden" id="providerId">
+                        <div class="mb-3">
+                            <label for="providerName" class="form-label">Nombre Completo</label>
+                            <input type="text" class="form-control" id="providerName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="providerEmail" class="form-label">Correo Electrónico</label>
+                            <input type="email" class="form-control" id="providerEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="providerPhone" class="form-label">Número de Teléfono</label>
+                            <input type="tel" class="form-control" id="providerPhone" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveProviderBtn">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para ver vehículos del proveedor -->
+    <div class="modal fade" id="vehiclesModal" tabindex="-1" aria-labelledby="vehiclesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="vehiclesModalLabel">Vehículos del Proveedor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Placa</th>
+                                    <th>Marca</th>
+                                    <th>Tipo</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vehiclesTableBody">
+                                <!-- Los vehículos se cargarán aquí dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="addVehicleBtn">Agregar Vehículo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS y dependencias -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery para simplificar el manejo del DOM -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Script personalizado -->
+    <script>
+        // Datos estáticos de ejemplo (serán reemplazados por API)
+        let providers = [
+            {
+                id: 1,
+                name: "Juan Pérez",
+                email: "juan.perez@example.com",
+                phone: "555-123-4567",
+                vehicles: [
+                    { plate: "ABC123", brand: "Toyota", type: "Sedán" },
+                    { plate: "XYZ789", brand: "Honda", type: "SUV" }
+                ]
+            },
+            {
+                id: 2,
+                name: "María García",
+                email: "maria.garcia@example.com",
+                phone: "555-987-6543",
+                vehicles: [
+                    { plate: "DEF456", brand: "Nissan", type: "Pickup" }
+                ]
+            },
+            {
+                id: 3,
+                name: "Carlos López",
+                email: "carlos.lopez@example.com",
+                phone: "555-456-7890",
+                vehicles: [
+                    { plate: "GHI789", brand: "Ford", type: "Camioneta" },
+                    { plate: "JKL012", brand: "Chevrolet", type: "Sedán" },
+                    { plate: "MNO345", brand: "Volkswagen", type: "Hatchback" }
+                ]
+            }
+        ];
+
+        // Variable para controlar si estamos editando
+        let isEditing = false;
+        // Variable para almacenar el proveedor actual cuyos vehículos estamos viendo
+        let currentProviderId = null;
+
+        // Función para renderizar los proveedores en la tabla
+        function renderProviders() {
+            const tableBody = $('#providersTableBody');
+            tableBody.empty();
+
+            providers.forEach(provider => {
+                const row = `
+                    <tr data-id="${provider.id}">
+                        <td>${provider.name}</td>
+                        <td>${provider.email}</td>
+                        <td>${provider.phone}</td>
+                        <td>
+                            <span class="badge badge-vehicles rounded-pill">
+                                ${provider.vehicles.length} vehículo${provider.vehicles.length !== 1 ? 's' : ''}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-warning action-btn edit-provider" data-id="${provider.id}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger action-btn delete-provider" data-id="${provider.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tableBody.append(row);
+            });
+
+            // Asignar eventos a los elementos recién creados
+            assignEvents();
+        }
+
+        // Función para asignar eventos
+        function assignEvents() {
+            // Click en fila para ver vehículos
+            $('tr[data-id]').click(function(e) {
+                // Evitar que se active al hacer clic en los botones de acción
+                if ($(e.target).closest('.action-btn').length === 0) {
+                    const providerId = $(this).data('id');
+                    showProviderVehicles(providerId);
+                }
+            });
+
+            // Botón editar proveedor
+            $('.edit-provider').click(function(e) {
+                e.stopPropagation();
+                const providerId = $(this).data('id');
+                const provider = providers.find(p => p.id == providerId);
+                
+                isEditing = true;
+                $('#addProviderModalLabel').text('Editar Proveedor');
+                $('#providerId').val(provider.id);
+                $('#providerName').val(provider.name);
+                $('#providerEmail').val(provider.email);
+                $('#providerPhone').val(provider.phone);
+                
+                $('#addProviderModal').modal('show');
+            });
+
+            // Botón eliminar proveedor
+            $('.delete-provider').click(function(e) {
+                e.stopPropagation();
+                const providerId = $(this).data('id');
+                
+                if (confirm('¿Estás seguro de que deseas eliminar este proveedor?')) {
+                    // Aquí iría la llamada a la API para eliminar
+                    providers = providers.filter(p => p.id != providerId);
+                    renderProviders();
+                    alert('Proveedor eliminado correctamente');
+                }
+            });
+        }
+
+        // Mostrar vehículos de un proveedor
+        function showProviderVehicles(providerId) {
+            const provider = providers.find(p => p.id == providerId);
+            currentProviderId = providerId;
+            
+            $('#vehiclesModalLabel').text(`Vehículos de ${provider.name}`);
+            const tableBody = $('#vehiclesTableBody');
+            tableBody.empty();
+            
+            provider.vehicles.forEach(vehicle => {
+                const row = `
+                    <tr>
+                        <td>${vehicle.plate}</td>
+                        <td>${vehicle.brand}</td>
+                        <td>${vehicle.type}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary edit-vehicle" data-plate="${vehicle.plate}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-vehicle" data-plate="${vehicle.plate}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tableBody.append(row);
+            });
+            
+            $('#vehiclesModal').modal('show');
+        }
+
+        // Guardar proveedor (nuevo o edición)
+        $('#saveProviderBtn').click(function() {
+            const id = $('#providerId').val();
+            const name = $('#providerName').val();
+            const email = $('#providerEmail').val();
+            const phone = $('#providerPhone').val();
+            
+            if (!name || !email || !phone) {
+                alert('Por favor complete todos los campos');
+                return;
+            }
+            
+            if (isEditing) {
+                // Editar proveedor existente
+                const index = providers.findIndex(p => p.id == id);
+                if (index !== -1) {
+                    providers[index] = {
+                        ...providers[index],
+                        name,
+                        email,
+                        phone
+                    };
+                }
+            } else {
+                // Agregar nuevo proveedor
+                const newId = providers.length > 0 ? Math.max(...providers.map(p => p.id)) + 1 : 1;
+                providers.push({
+                    id: newId,
+                    name,
+                    email,
+                    phone,
+                    vehicles: []
+                });
+            }
+            
+            renderProviders();
+            $('#addProviderModal').modal('hide');
+            resetForm();
+        });
+
+        // Resetear el formulario al cerrar el modal
+        $('#addProviderModal').on('hidden.bs.modal', function() {
+            resetForm();
+        });
+
+        // Función para resetear el formulario
+        function resetForm() {
+            isEditing = false;
+            $('#providerForm')[0].reset();
+            $('#providerId').val('');
+            $('#addProviderModalLabel').text('Agregar Nuevo Proveedor');
+        }
+
+        // Inicializar la vista
+        $(document).ready(function() {
+            renderProviders();
+            
+            // Botón agregar proveedor
+            $('.btn-add').click(function() {
+                isEditing = false;
+                resetForm();
+            });
+            
+            // Búsqueda de proveedores
+            $('#searchInput').keyup(function() {
+                const searchTerm = $(this).val().toLowerCase();
+                $('tbody tr').each(function() {
+                    const text = $(this).text().toLowerCase();
+                    $(this)[text.includes(searchTerm) ? 'show' : 'hide']();
+                });
+            });
+
+            // Botón para agregar vehículo (pendiente de implementar)
+            $('#addVehicleBtn').click(function() {
+                alert('Funcionalidad para agregar vehículo pendiente de implementar');
+            });
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
+</body>
+</html>
