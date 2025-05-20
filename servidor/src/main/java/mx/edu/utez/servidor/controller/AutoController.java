@@ -12,6 +12,8 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/autos")
 public class AutoController {
