@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Proveedores y Vehículos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 20px;
+        }
+        .table-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f1f3f9;
+            cursor: pointer;
+        }
+        .action-btn {
+            margin: 0 3px;
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-add {
+            background-color: #4e73df;
+            color: white;
+            font-weight: bold;
+        }
+        .btn-add:hover {
+            background-color: #3a5ccc;
+            color: white;
+        }
+        .badge-vehicles {
+            background-color: #4e73df;
+            font-size: 0.85em;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .error-alert {
+            display: none;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="DashboardAutomoviles.html">Carros</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Proveedores</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <h1 class="mb-4">Gestión de Proveedores</h1>
+
+        <div class="alert alert-danger error-alert" id="errorAlert" role="alert">
+            <span id="errorMessage"></span>
+        </div>
+
+        <div class="row search-container">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Buscar proveedor..." id="searchInput">
+                    <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-add" id="addProviderBtn">
+                    <i class="fas fa-plus"></i> Agregar Proveedor
+                </button>
+            </div>
+        </div>
+
+        <div class="loading-spinner" id="loadingSpinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2">Cargando datos...</p>
+        </div>
+
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Correo</th>
+                            <th>Teléfono</th>
+                            <th>Vehículos</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="providersTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="providerModal" tabindex="-1" aria-labelledby="providerModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="providerModalLabel">Agregar Nuevo Proveedor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="providerForm">
+                        <input type="hidden" id="providerId">
+                        <div class="mb-3">
+                            <label for="nombreCompleto" class="form-label">Nombre Completo</label>
+                            <input type="text" class="form-control" id="nombreCompleto" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="correo" class="form-label">Correo Electrónico</label>
+                            <input type="email" class="form-control" id="correo" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="numeroTelefono" class="form-label">Número de Teléfono</label>
+                            <input type="tel" class="form-control" id="numeroTelefono" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveProviderBtn">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="vehiclesModal" tabindex="-1" aria-labelledby="vehiclesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="vehiclesModalLabel">Vehículos del Proveedor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Placa</th>
+                                    <th>Marca</th>
+                                    <th>Tipo</th>
+                                    <th>Color</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vehiclesTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="vehicleModal" tabindex="-1" aria-labelledby="vehicleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="vehicleModalLabel">Agregar Vehículo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="vehicleForm">
+                        <input type="hidden" id="currentProviderId">
+                        <input type="hidden" id="vehicleId">
+                        <div class="mb-3">
+                            <label for="placa" class="form-label">Placa</label>
+                            <input type="text" class="form-control" id="placa" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="marca" class="form-label">Marca</label>
+                            <input type="text" class="form-control" id="marca" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="tipo" class="form-label">Tipo</label>
+                            <input type="text" class="form-control" id="tipo" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="color" class="form-label">Color</label>
+                            <input type="text" class="form-control" id="color" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveVehicleBtn">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Variables globales
+        let currentProviderId = null;
+        let isEditingProvider = false;
+        let isEditingVehicle = false;
+        const apiBaseUrl = 'http://localhost:8080/api';
+
+        // DOM Elements
+        const elements = {
+            providerModal: new bootstrap.Modal('#providerModal'),
+            vehiclesModal: new bootstrap.Modal('#vehiclesModal'),
+            vehicleModal: new bootstrap.Modal('#vehicleModal'),
+            loadingSpinner: $('#loadingSpinner'),
+            errorAlert: $('#errorAlert'),
+            errorMessage: $('#errorMessage')
+        };
+
+        // Funciones de utilidad
+        function showLoading() {
+            elements.loadingSpinner.show();
+        }
+
+        function hideLoading() {
+            elements.loadingSpinner.hide();
+        }
+
+        function showError(message) {
+            elements.errorMessage.text(message);
+            elements.errorAlert.show();
+            setTimeout(() => elements.errorAlert.hide(), 5000);
+        }
+
+        async function fetchData(url, options = {}) {
+            try {
+                showLoading();
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    ...options
+                });
+
+                if (!response.ok) {
+                    let errorMessage = 'Error en la solicitud';
+                    try {
+                        const errorJson = await response.json();
+                        errorMessage = errorJson.message || errorMessage;
+                    } catch (e) {
+                    }
+                    throw new Error(errorMessage);
+                }
+                return response.status === 204 ? null : await response.json();
+            } catch (error) {
+                showError(error.message);
+                throw error;
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Funciones para proveedores
+        async function loadProviders() {
+            try {
+                const providers = await fetchData(`${apiBaseUrl}/proveedores/`);
+                renderProviders(providers);
+            } catch (error) {
+                console.error('Error loading providers:', error);
+            }
+        }
+
+        function renderProviders(providers) {
+            const tableBody = $('#providersTableBody');
+            tableBody.empty();
+
+            providers.forEach(provider => {
+                // Obtener la cantidad de vehículos usando la URL específica
+                getVehicleCount(provider.id)
+                    .then(vehicleCount => {
+                        const row = `
+                            <tr data-id="${provider.id}">
+                                <td>${provider.nombreCompleto}</td>
+                                <td>${provider.correo}</td>
+                                <td>${provider.numeroTelefono}</td>
+                                <td>
+                                    <span class="badge badge-vehicles rounded-pill">
+                                        ${vehicleCount} vehículo${vehicleCount !== 1 ? 's' : ''}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning action-btn edit-provider" data-id="${provider.id}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger action-btn delete-provider" data-id="${provider.id}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                        tableBody.append(row);
+                    })
+                    .catch(error => {
+                        console.error('Error al obtener la cantidad de vehículos:', error);
+                        const row = `
+                            <tr data-id="${provider.id}">
+                                <td>${provider.nombreCompleto}</td>
+                                <td>${provider.correo}</td>
+                                <td>${provider.numeroTelefono}</td>
+                                <td>
+                                    <span class="badge badge-vehicles rounded-pill">
+                                        0 vehículos
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning action-btn edit-provider" data-id="${provider.id}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger action-btn delete-provider" data-id="${provider.id}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                        tableBody.append(row);
+                    });
+            });
+        }
+
+        async function getVehicleCount(providerId) {
+            try {
+                const vehicles = await fetchData(`${apiBaseUrl}/proveedores/${providerId}/autos`);
+                return vehicles.length;
+            } catch (error) {
+                // En caso de error, retorna 0 para no romper la aplicación
+                return 0;
+            }
+        }
+
+        async function showProviderVehicles(providerId) {
+            try {
+                currentProviderId = providerId;
+                const vehicles = await fetchData(`${apiBaseUrl}/proveedores/${providerId}/autos`); // URL corregida
+                const providerName = await getProviderName(providerId);
+                $('#vehiclesModalLabel').text(`Vehículos de ${providerName}`);
+                renderVehicles(vehicles);
+                elements.vehiclesModal.show();
+            } catch (error) {
+                console.error('Error showing provider vehicles:', error);
+            }
+        }
+
+        async function getProviderName(providerId) {
+            try{
+                const provider = await fetchData(`${apiBaseUrl}/proveedores/${providerId}`);
+                return provider.nombreCompleto;
+            } catch(error){
+                console.error("Error getting provider Name", error);
+                return "Nombre Desconocido";
+            }
+        }
+
+        function renderVehicles(vehicles) {
+            const tableBody = $('#vehiclesTableBody');
+            tableBody.empty();
+
+            if (vehicles.length === 0) {
+                tableBody.append('<tr><td colspan="5" class="text-center">No hay vehículos registrados</td></tr>');
+                return;
+            }
+
+            vehicles.forEach(vehicle => {
+                const row = `
+                    <tr>
+                        <td>${vehicle.id}</td>
+                        <td>${vehicle.marca}</td>
+                        <td>${vehicle.tipo}</td>
+                        <td>${vehicle.color}</td>
+                    </tr>
+                `;
+                tableBody.append(row);
+            });
+        }
+
+        async function saveProvider() {
+            const providerData = {
+                nombreCompleto: $('#nombreCompleto').val(),
+                correo: $('#correo').val(),
+                numeroTelefono: $('#numeroTelefono').val()
+            };
+
+            const providerId = $('#providerId').val();
+
+            try {
+                if (isEditingProvider) {
+                    await fetchData(`${apiBaseUrl}/proveedores/${providerId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(providerData)
+                    });
+                } else {
+                    await fetchData(`${apiBaseUrl}/proveedores/`, {
+                        method: 'POST',
+                        body: JSON.stringify(providerData)
+                    });
+                }
+
+                elements.providerModal.hide();
+                await loadProviders();
+            } catch (error) {
+                console.error('Error saving provider:', error);
+            } finally {
+                isEditingProvider = false;
+            }
+        }
+
+        async function deleteProvider(providerId) {
+            if (!confirm('¿Estás seguro de que deseas eliminar este proveedor?')) return;
+
+            try {
+                await fetchData(`${apiBaseUrl}/proveedores/${providerId}`, {
+                    method: 'DELETE'
+                });
+                await loadProviders();
+            } catch (error) {
+                showError(error.message || 'No se puede eliminar el proveedor porque tiene vehículos asociados');
+                console.error('Error deleting provider:', error);
+            }
+        }
+
+        // Funciones para vehículos
+        async function showAddVehicleModal() {
+            isEditingVehicle = false;
+            $('#vehicleModalLabel').text('Agregar Vehículo');
+            $('#vehicleForm')[0].reset();
+            $('#currentProviderId').val(currentProviderId);
+            $('#vehicleId').val('');
+            elements.vehicleModal.show();
+        }
+
+        async function showEditVehicleModal(vehicleId) {
+            try {
+                isEditingVehicle = true;
+                const vehicle = await fetchData(`${apiBaseUrl}/autos/${vehicleId}`);
+
+                $('#vehicleModalLabel').text('Editar Vehículo');
+                $('#vehicleId').val(vehicle.id);
+                $('#placa').val(vehicle.id);
+                $('#marca').val(vehicle.marca);
+                $('#tipo').val(vehicle.tipo);
+                $('#color').val(vehicle.color);
+                $('#currentProviderId').val(currentProviderId);
+
+                elements.vehicleModal.show();
+            } catch (error) {
+                console.error('Error loading vehicle:', error);
+                showError(error.message || 'Error al cargar el vehículo');
+            }
+        }
+
+        async function saveVehicle() {
+            const vehicleData = {
+                id: $('#placa').val(),
+                marca: $('#marca').val(),
+                tipo: $('#tipo').val(),
+                color: $('#color').val(),
+                proveedor: {
+                    id: currentProviderId
+                }
+            };
+            const vehicleId = $('#vehicleId').val();
+
+            try {
+                if (isEditingVehicle) {
+                    await fetchData(`${apiBaseUrl}/autos/${vehicleId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(vehicleData)
+                    });
+                } else {
+                    await fetchData(`${apiBaseUrl}/autos/`, {
+                        method: 'POST',
+                        body: JSON.stringify(vehicleData)
+                    });
+                }
+
+                elements.vehicleModal.hide();
+                await showProviderVehicles(currentProviderId);
+            } catch (error) {
+                console.error('Error saving vehicle:', error);
+                showError(error.message || 'Error al guardar el vehículo');
+            } finally {
+                isEditingVehicle = false;
+            }
+        }
+
+        async function deleteVehicle(vehicleId) {
+            if (!confirm('¿Estás seguro de que deseas eliminar este vehículo?')) return;
+
+            try {
+                await fetchData(`${apiBaseUrl}/autos/${vehicleId}`, {
+                    method: 'DELETE'
+                });
+                await showProviderVehicles(currentProviderId);
+            } catch (error) {
+                console.error('Error deleting vehicle:', error);
+                showError(error.message || 'Error al eliminar el vehículo');
+            }
+        }
+
+        // Asignación de eventos
+        function initializeEventListeners() {
+            $(document).on('click', 'tr[data-id]', function(e) {
+                if ($(e.target).closest('.action-btn').length === 0) {
+                    const providerId = $(this).data('id');
+                    showProviderVehicles(providerId);
+                }
+            });
+
+            $('#addProviderBtn').click(() => {
+                isEditingProvider = false;
+                $('#providerModalLabel').text('Agregar Proveedor');
+                $('#providerForm')[0].reset();
+                $('#providerId').val('');
+                elements.providerModal.show();
+            });
+
+            $('#saveProviderBtn').click(saveProvider);
+            $('#addVehicleBtn').click(showAddVehicleModal);
+            $('#saveVehicleBtn').click(saveVehicle);
+
+            $('#providersTableBody').on('click', '.edit-provider', function(e) {
+                e.stopPropagation();
+                editProvider($(this).data('id'));
+            });
+
+            $('#providersTableBody').on('click', '.delete-provider', function(e) {
+                e.stopPropagation();
+                deleteProvider($(this).data('id'));
+            });
+
+            $('#searchInput').keyup(function() {
+                const searchTerm = $(this).val().toLowerCase();
+                $('#providersTableBody tr').each(function() {
+                    const text = $(this).text().toLowerCase();
+                    $(this).toggle(text.includes(searchTerm));
+                });
+            });
+        }
+
+        async function editProvider(providerId) {
+            try {
+                isEditingProvider = true;
+                const provider = await fetchData(`${apiBaseUrl}/proveedores/${providerId}`);
+
+                $('#providerModalLabel').text('Editar Proveedor');
+                $('#providerId').val(provider.id);
+                $('#nombreCompleto').val(provider.nombreCompleto);
+                $('#correo').val(provider.correo);
+                $('#numeroTelefono').val(provider.numeroTelefono);
+
+                elements.providerModal.show();
+            } catch (error) {
+                console.error('Error loading provider:', error);
+                showError(error.message || 'Error al cargar el proveedor');
+            }
+        }
+
+        // Inicialización
+        $(document).ready(() => {
+            initializeEventListeners();
+            loadProviders();
+
+            $('#vehiclesTableBody').on('click', '.edit-vehicle', function() {
+                showEditVehicleModal($(this).data('id'));
+            });
+
+            $('#vehiclesTableBody').on('click', '.delete-vehicle', function() {
+                deleteVehicle($(this).data('id'));
+            });
+        });
+    </script>
+</body>
+</html>
