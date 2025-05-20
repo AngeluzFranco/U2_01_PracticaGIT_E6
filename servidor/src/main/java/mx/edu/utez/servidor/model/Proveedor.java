@@ -1,5 +1,6 @@
 package mx.edu.utez.servidor.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -15,6 +16,7 @@ public class Proveedor {
     private String numeroTelefono;
 
     @OneToMany(mappedBy = "proveedor")
+    @JsonIgnore
     private List<Auto> autos;
 
     public Integer getId() {
