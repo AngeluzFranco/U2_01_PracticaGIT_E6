@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Coches</title>
+
+
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+       body {
+            background-color: #f8f9fa;
+       
+        }
+        .card { 
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .car-card {
+            cursor: pointer;
+        }
+        .action-btn {
+            margin: 0 5px;
+        }
+        .modal-vehicle-img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        .btn-add {
+            background-color: #4e73df;
+            color: white;
+            font-weight: bold;
+        }
+        .btn-add:hover {
+            background-color: #3a5ccc;
+            color: white;
+        }
+        .car-brand {
+            font-size: 1.5em;
+            font-weight: bold;
+            text-align: center;
+            padding-top: 10px;
+        }
+        .provider-name {
+            font-size: 0.9em;
+            color: #6c757d;
+            text-align: center;
+            padding-bottom: 10px;
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            padding-bottom: 10px;
+        }
+        .info-button {
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand text-white" href="#">Carros</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="DashboardProveedores.html">Proveedores</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active text-white" aria-current="page" href="#">Automóviles</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+    <div class="container">
+        
+        <h1 class="mb-4">Gestión de Automóviles</h1>
+
+        <div class="row search-container">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Buscar automóvil..." id="searchInput">
+                    <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-add" id="addCarBtn" data-bs-toggle="modal" data-bs-target="#addCarModal">
+                    <i class="fas fa-plus"></i> Agregar Automóvil
+                </button>
+            </div>
+        </div>
+
+        <div class="loading-spinner" id="loadingSpinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2">Cargando datos...</p>
+        </div>
+
+        <div class="row" id="carsContainer">
+        </div>
+    </div>
+
+    <div class="modal fade" id="carModal" tabindex="-1" aria-labelledby="carModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="carModalLabel">Agregar Nuevo Automóvil</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="carForm">
+                        <input type="hidden" id="carId">
+                        <div class="mb-3">
+                            <label for="carBrand" class="form-label">Marca</label>
+                            <input type="text" class="form-control" id="carBrand" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="carColor" class="form-label">Color</label>
+                            <input type="text" class="form-control" id="carColor">
+                        </div>
+                        <div class="mb-3">
+                            <label for="carType" class="form-label">Tipo</label>
+                            <input type="text" class="form-control" id="carType">
+                        </div>
+                        <div class="mb-3">
+                            <label for="carPlate" class="form-label">Placas</label>
+                            <input type="text" class="form-control" id="carPlate">
+                        </div>
+                        <div class="mb-3">
+                            <label for="carProviderId" class="form-label">Proveedor</label>
+                            <select class="form-select" id="carProviderId" required>
+                                <option value="">Seleccionar proveedor</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveCarBtn">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="carDetailsModal" tabindex="-1" aria-labelledby="carDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="carDetailsModalLabel">Detalles del Automóvil</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <h6>Información del Automóvil</h6>
+                        <p><strong>Marca:</strong> <span id="detailBrand"></span></p>
+                        <p><strong>Color:</strong> <span id="detailColor"></span></p>
+                        <p><strong>Tipo:</strong> <span id="detailType"></span></p>
+                        <p><strong>Placas:</strong> <span id="detailPlate"></span></p>
+                    </div>
+                    <hr>
+                    <div>
+                        <h6>Información del Proveedor</h6>
+                        <p><strong>Nombre:</strong> <span id="detailProviderName"></span></p>
+                        <p><strong>Correo:</strong> <span id="detailProviderEmail"></span></p>
+                        <p><strong>Teléfono:</strong> <span id="detailProviderPhone"></span></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Variables globales
+        let isEditingCar = false;
+        let currentCarId = null;
+        const apiBaseUrl = 'http://localhost:8080/api';
+
+        // DOM Elements
+        const elements = {
+            carModal: new bootstrap.Modal('#carModal'),
+            carDetailsModal: new bootstrap.Modal('#carDetailsModal'),
+            loadingSpinner: $('#loadingSpinner'),
+            errorAlert: $('#errorAlert'),
+            errorMessage: $('#errorMessage'),
+            carsContainer: $('#carsContainer'),
+            searchInput: $('#searchInput'),
+            addCarBtn: $('#addCarBtn'),
+            saveCarBtn: $('#saveCarBtn'),
+            carForm: $('#carForm'),
+            carBrandInput: $('#carBrand'),
+            carColorInput: $('#carColor'),
+            carTypeInput: $('#carType'),
+            carPlateInput: $('#carPlate'),
+            carProviderIdSelect: $('#carProviderId'),
+            detailBrandSpan: $('#detailBrand'),
+            detailColorSpan: $('#detailColor'),
+            detailTypeSpan: $('#detailType'),
+            detailPlateSpan: $('#detailPlate'),
+            detailProviderNameSpan: $('#detailProviderName'),
+            detailProviderEmailSpan: $('#detailProviderEmail'),
+            detailProviderPhoneSpan: $('#detailProviderPhone')
+        };
+
+        // Funciones de utilidad
+        function showLoading() {
+            elements.loadingSpinner.show();
+        }
+
+        function hideLoading() {
+            elements.loadingSpinner.hide();
+        }
+
+        function showError(message) {
+            elements.errorMessage.text(message);
+            elements.errorAlert.show();
+            setTimeout(() => elements.errorAlert.hide(), 5000);
+        }
+
+        async function fetchData(url, options = {}) {
+            try {
+                showLoading();
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    ...options
+                });
+
+                if (!response.ok) {
+                    let errorMessage = 'Error en la solicitud';
+                    try {
+                        const errorJson = await response.json();
+                        errorMessage = errorJson.message || errorMessage;
+                    } catch (e) {
+                    }
+                    throw new Error(errorMessage);
+                }
+                return response.status === 204 ? null : await response.json();
+            } catch (error) {
+                showError(error.message);
+                throw error;
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Funciones para coches
+        async function loadCars() {
+            try {
+                const cars = await fetchData(`${apiBaseUrl}/autos/`);
+                renderCars(cars);
+            } catch (error) {
+                console.error('Error loading cars:', error);
+            }
+        }
+
+        function renderCars(cars) {
+            const container = elements.carsContainer;
+            container.empty();
+
+            cars.forEach(car => {
+                const card = `
+                    <div class="col-md-4">
+                        <div class="card car-card" data-id="${car.id}">
+                            <div class="card-body">
+                                <h5 class="car-brand">${car.marca}</h5>
+                                <p class="provider-name">${car.proveedor.nombreCompleto}</p>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-warning action-btn edit-car" data-id="${car.id}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger action-btn delete-car" data-id="${car.id}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-info action-btn info-button view-details" data-id="${car.id}">
+                                        <i class="fas fa-info-circle"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.append(card);
+            });
+            assignCarEvents();
+        }
+
+        async function loadProviders() {
+            try {
+                const providers = await fetchData(`${apiBaseUrl}/proveedores/`);
+                const providerSelect = elements.carProviderIdSelect;
+                providerSelect.empty();
+                providerSelect.append('<option value="">Seleccionar proveedor</option>');
+                providers.forEach(provider => {
+                    providerSelect.append(`<option value="${provider.id}">${provider.nombreCompleto}</option>`);
+                });
+            } catch (error) {
+                console.error('Error loading providers:', error);
+            }
+        }
+
+        async function showCarModal() {
+            isEditingCar = false;
+            elements.carModalLabel.text('Agregar Nuevo Automóvil');
+            elements.carForm[0].reset();
+            elements.carIdInput.val('');
+            await loadProviders();
+            elements.carModal.show();
+        }
+
+        async function saveCar() {
+            const carData = {
+                id: elements.carPlateInput.val(),
+                marca: elements.carBrandInput.val(),
+                color: elements.carColorInput.val(),
+                tipo: elements.carTypeInput.val(),
+                proveedor: {
+                    id: parseInt(elements.carProviderIdSelect.val())
+                }
+            };
+
+            const carId = elements.carIdInput.val();
+
+            try {
+                if (isEditingCar && currentCarId !== null) {
+                    await fetchData(`${apiBaseUrl}/autos/${carId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(carData)
+                    });
+                } else {
+                    await fetchData(`${apiBaseUrl}/autos/`, {
+                        method: 'POST',
+                        body: JSON.stringify(carData)
+                    });
+                }
+
+                elements.carModal.hide();
+                await loadCars();
+            } catch (error) {
+                console.error('Error saving car:', error);
+            } finally {
+                isEditingCar = false;
+                currentCarId = null;
+            }
+        }
+
+        async function deleteCar(carId) {
+            if (!confirm('¿Estás seguro de que deseas eliminar este automóvil?')) return;
+
+            try {
+                await fetchData(`${apiBaseUrl}/autos/${carId}`, {
+                    method: 'DELETE'
+                });
+                await loadCars();
+            } catch (error) {
+                showError(error.message || 'Error al eliminar el coche');
+                console.error('Error deleting car:', error);
+            }
+        }
+
+        async function editCar(carId) {
+            try {
+                const car = await fetchData(`${apiBaseUrl}/autos/${carId}`);
+                isEditingCar = true;
+                currentCarId = carId;
+                elements.carModalLabel.text('Editar Automóvil');
+                elements.carIdInput.val(car.id);
+                elements.carBrandInput.val(car.marca);
+                elements.carColorInput.val(car.color);
+                elements.carTypeInput.val(car.tipo);
+                elements.carPlateInput.val(car.id);
+                await loadProviders();
+                elements.carProviderIdSelect.val(car.proveedor.id);
+                elements.carModal.show();
+            } catch (error) {
+                console.error('Error loading car:', error);
+                showError(error.message || 'Error al cargar el coche');
+            }
+        }
+
+        async function showCarDetails(carId) {
+            try {
+                const car = await fetchData(`${apiBaseUrl}/autos/${carId}`);
+                const provider = await fetchData(`${apiBaseUrl}/proveedores/${car.proveedor.id}`);
+
+                elements.detailBrandSpan.text(car.marca);
+                elements.detailColorSpan.text(car.color || 'N/A');
+                elements.detailTypeSpan.text(car.tipo || 'N/A');
+                elements.detailPlateSpan.text(car.id || 'N/A');
+                elements.detailProviderNameSpan.text(provider.nombreCompleto);
+                elements.detailProviderEmailSpan.text(provider.correo);
+                elements.detailProviderPhoneSpan.text(provider.numeroTelefono);
+                elements.carDetailsModal.show();
+            } catch (error) {
+                console.error('Error loading car details:', error);
+                showError(error.message || 'Error al cargar los detalles del coche');
+            }
+        }
+
+        // Asignación de eventos
+        function initializeEventListeners() {
+            elements.addCarBtn.click(showCarModal);
+            elements.saveCarBtn.click(saveCar);
+            elements.searchInput.keyup(function() {
+                const searchTerm = $(this).val().toLowerCase();
+                $('.car-card').each(function() {
+                    const text = $(this).text().toLowerCase();
+                    $(this).closest('.col-md-4')[text.includes(searchTerm) ? 'show' : 'hide']();
+                });
+            });
+        }
+
+        function assignCarEvents() {
+            $('.edit-car').off('click').on('click', function(e) {
+                e.stopPropagation();
+                editCar($(this).data('id'));
+            });
+
+            $('.delete-car').off('click').on('click', function(e) {
+                e.stopPropagation();
+                deleteCar($(this).data('id'));
+            });
+
+            $('.view-details').off('click').on('click', function(e) {
+                e.stopPropagation();
+                showCarDetails($(this).data('id'));
+            });
+        }
+
+        // Inicialización
+        $(document).ready(() => {
+            initializeEventListeners();
+            loadCars();
+        });
+    </script>
+</body>
+</html>
