@@ -1,6 +1,7 @@
 package mx.edu.utez.servidor.service;
 
 
+import mx.edu.utez.servidor.model.Auto;
 import mx.edu.utez.servidor.model.Proveedor;
 import mx.edu.utez.servidor.repository.ProveedorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,14 @@ public class ProveedorService {
         proveedor.setCorreo(proveedorDetails.getCorreo());
         proveedor.setNumeroTelefono(proveedorDetails.getNumeroTelefono());
         return proveedorRepository.save(proveedor);
+    }
+
+
+    @Transactional(readOnly = true)
+    public List<Auto> getAutosByProveedorId(Integer id) {
+        Proveedor proveedor = proveedorRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Proveedor no encontrado con ID: " + id));
+        return proveedor.getAutos();
     }
 
     @Transactional

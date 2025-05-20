@@ -2,6 +2,7 @@ package mx.edu.utez.servidor.controller;
 
 
 import jakarta.validation.Valid;
+import mx.edu.utez.servidor.model.Auto;
 import mx.edu.utez.servidor.model.Proveedor;
 import mx.edu.utez.servidor.service.ProveedorService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +26,21 @@ public class ProveedorController {
         this.proveedorService = proveedorService;
     }
 
+
+
     @GetMapping("/")
     public ResponseEntity<List<Proveedor>> getAllProveedores() {
         return new ResponseEntity<>(proveedorService.getAllProveedores(), HttpStatus.OK);
+    }
+
+
+    @GetMapping("/{id}/autos")
+    public ResponseEntity<List<Auto>> getAutosByProveedorId(@PathVariable Integer id) {
+        try {
+            return new ResponseEntity<>(proveedorService.getAutosByProveedorId(id), HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/{id}")
